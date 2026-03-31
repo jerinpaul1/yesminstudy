@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4-Week Study Plan</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#f8f7f4;color:#1a1a18;min-height:100vh;padding:20px 16px 40px}
+.container{max-width:780px;margin:0 auto}
+h1{font-size:20px;font-weight:500;margin-bottom:4px;color:#1a1a18}
+.subtitle{font-size:13px;color:#73726c;margin-bottom:20px}
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:20px}
+.leg{display:flex;align-items:center;gap:6px;font-size:12px;color:#5f5e5a}
+.leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.progress-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:24px}
+@media(min-width:540px){.progress-row{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.prog-card{background:#fff;border:0.5px solid rgba(0,0,0,0.1);border-radius:10px;padding:10px 12px}
+.prog-label{display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-bottom:6px}
+.prog-name{color:#5f5e5a}
+.prog-pct{font-weight:500;color:#1a1a18}
+.prog-track{height:4px;background:rgba(0,0,0,0.08);border-radius:2px}
+.prog-fill{height:4px;border-radius:2px;transition:width .3s ease}
+.week-tabs{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;padding-bottom:2px}
+.tab{padding:6px 14px;border-radius:20px;border:0.5px solid rgba(0,0,0,0.15);font-size:13px;cursor:pointer;background:transparent;color:#5f5e5a;white-space:nowrap;transition:all .15s}
+.tab:hover{background:rgba(0,0,0,0.04)}
+.tab.active{background:#fff;color:#1a1a18;border-color:rgba(0,0,0,0.25);font-weight:500}
+.week-view{display:grid;gap:10px}
+.day-card{background:#fff;border:0.5px solid rgba(0,0,0,0.1);border-radius:12px;overflow:hidden}
+.day-head{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border-bottom:0.5px solid rgba(0,0,0,0.07)}
+.day-name{font-size:13px;font-weight:500;color:#1a1a18}
+.day-meta{display:flex;align-items:center;gap:8px}
+.day-hrs{font-size:12px;color:#73726c}
+.badge-done{font-size:11px;background:#eaf3de;color:#3b6d11;padding:2px 8px;border-radius:20px}
+.badge-today{font-size:11px;background:#e6f1fb;color:#185fa5;padding:2px 8px;border-radius:20px}
+.rest-card{background:rgba(0,0,0,0.03);border:0.5px solid rgba(0,0,0,0.07);border-radius:12px;padding:12px 14px;text-align:center;font-size:13px;color:#888780;display:flex;align-items:center;justify-content:center;gap:6px}
+.task-row{display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:0.5px solid rgba(0,0,0,0.05)}
+.task-row:last-child{border-bottom:none}
+.mod-bar{width:3px;height:30px;border-radius:2px;flex-shrink:0}
+input[type=checkbox]{width:16px;height:16px;cursor:pointer;flex-shrink:0;accent-color:#378add}
+.task-text{font-size:13px;color:#1a1a18;flex:1;line-height:1.4;transition:color .15s}
+.task-text.done{color:#b4b2a9;text-decoration:line-through}
+.task-hrs{font-size:12px;color:#888780;white-space:nowrap}
+.mod-chip{font-size:11px;padding:2px 7px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.section-note{font-size:11px;color:#BA7517;background:#FAEEDA;padding:4px 14px;text-align:center;border-top:0.5px solid rgba(186,117,23,0.15)}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>4-Week Revision Plan</h1>
+  <p class="subtitle">Starting 28 Mar · Sundays rest · All notes done by ~20 Apr · Revision week 4</p>
+
+  <div class="legend">
+    <div class="leg"><div class="leg-dot" style="background:#1D9E75"></div>Cell</div>
+    <div class="leg"><div class="leg-dot" style="background:#D85A30"></div>Membranes</div>
+    <div class="leg"><div class="leg-dot" style="background:#7F77DD"></div>Proteins</div>
+    <div class="leg"><div class="leg-dot" style="background:#378ADD"></div>Chemistry</div>
+    <div class="leg"><div class="leg-dot" style="background:#BA7517"></div>Revision</div>
+  </div>
+
+  <div class="progress-row" id="progress-row"></div>
+
+  <div class="week-tabs" id="tabs"></div>
+  <div class="week-view" id="week-view"></div>
+</div>
+
+<script>
+const MOD={
+  cell:  {label:'Cell',      color:'#1D9E75', bg:'#E1F5EE', tc:'#085041'},
+  mem:   {label:'Membranes', color:'#D85A30', bg:'#FAECE7', tc:'#712B13'},
+  prot:  {label:'Proteins',  color:'#7F77DD', bg:'#EEEDFE', tc:'#3C3489'},
+  chem:  {label:'Chemistry', color:'#378ADD', bg:'#E6F1FB', tc:'#0C447C'},
+  rev:   {label:'Revision',  color:'#BA7517', bg:'#FAEEDA', tc:'#633806'},
+};
+
+const S=[
+{week:1,label:'Week 1 — 28 Mar',days:[
+  {date:'Sat 28 Mar',today:true,tasks:[
+    {id:'c3', mod:'cell',text:'Cell L3 — Mitochondria pt.2',h:1.75},
+    {id:'c5', mod:'cell',text:'Cell L5 — Cell death pt.1',h:1.75},
+  ]},
+  {date:'Sun 29 Mar',rest:true},
+  {date:'Mon 30 Mar',tasks:[
+    {id:'c6', mod:'cell',text:'Cell L6 — Cell death pt.2',h:1.75},
+    {id:'c9', mod:'cell',text:'Cell L9 — ECM  (2h lecture → ~3h notes)',h:3.0},
+  ]},
+  {date:'Tue 31 Mar',tasks:[
+    {id:'c10',mod:'cell',text:'Cell L10 — ECM and disease',h:1.75},
+    {id:'c11',mod:'cell',text:'Cell L11 — Cell signalling',h:1.75},
+    {id:'m1', mod:'mem', text:'Membranes L1 — Membrane techniques',h:1.75},
+  ]},
+  {date:'Wed 1 Apr',tasks:[
+    {id:'m2', mod:'mem',text:'Membranes L2 — Analysis',h:1.75},
+    {id:'m3', mod:'mem',text:'Membranes L3 — Analysis and transport',h:1.75},
+    {id:'m4', mod:'mem',text:'Membranes L4 — Membrane transport',h:1.75},
+  ]},
+  {date:'Thu 2 Apr',tasks:[
+    {id:'m5', mod:'mem',text:'Membranes L5 — Membrane transport Q&A',h:1.75},
+    {id:'mp1',mod:'mem',text:'Membranes — Prereading ox phos 1',h:1.25},
+    {id:'mp2',mod:'mem',text:'Membranes — Prereading ox phos 2',h:1.25},
+  ]},
+  {date:'Fri 3 Apr',tasks:[
+    {id:'mp3',mod:'mem',text:'Membranes — Prereading ox phos 3',h:1.25},
+    {id:'m6', mod:'mem',text:'Membranes L6 — Ox phos Q&A',h:1.75},
+    {id:'m7', mod:'mem',text:'Membranes L7 — Ox phos Q&A',h:1.75},
+  ]},
+]},
+{week:2,label:'Week 2 — 4 Apr',days:[
+  {date:'Sat 4 Apr',tasks:[
+    {id:'mp4',mod:'mem',text:'Membranes — Prereading ox phos 4',h:1.25},
+    {id:'mp5',mod:'mem',text:'Membranes — Prereading ox phos 5',h:1.25},
+    {id:'m8', mod:'mem',text:'Membranes L8 — Ox phos Q&A',h:1.75},
+  ]},
+  {date:'Sun 5 Apr',rest:true},
+  {date:'Mon 6 Apr',tasks:[
+    {id:'m9', mod:'mem',text:'Membranes L9 — Ox phos Q&A',h:1.75},
+    {id:'m10',mod:'mem',text:'Membranes L10 — Ox phos Q&A',h:1.75},
+    {id:'m11',mod:'mem',text:'Membranes L11 — Ox phos Q&A',h:1.75},
+  ]},
+  {date:'Tue 7 Apr',tasks:[
+    {id:'m12',mod:'mem',text:'Membranes L12 — Kreft: rest',h:1.75},
+    {id:'m13',mod:'mem',text:'Membranes L13 — Kreft: fermentation',h:1.75},
+    {id:'m14',mod:'mem',text:'Membranes L14 — Kreft: photosynthesis',h:1.75},
+  ]},
+  {date:'Wed 8 Apr',tasks:[
+    {id:'m15',mod:'mem',text:'Membranes L15 — Kreft: photosynthesis',h:1.75},
+    {id:'m16',mod:'mem',text:'Membranes L16 — Carbohydrate metabolism',h:1.75},
+    {id:'m17',mod:'mem',text:'Membranes L17 — Allosteric enzymes / glycogen phosphorylase',h:1.75},
+  ]},
+  {date:'Thu 9 Apr',complete:'Membranes',tasks:[
+    {id:'m18',mod:'mem',text:'Membranes L18 — Glycogen phosphorylase',h:1.75},
+    {id:'m19',mod:'mem',text:'Membranes L19 — Lipid metabolism',h:1.75},
+    {id:'m20',mod:'mem',text:'Membranes L20 — Amino acid metabolism',h:1.75},
+  ]},
+  {date:'Fri 10 Apr',tasks:[
+    {id:'p3', mod:'prot',text:'Proteins L3',h:1.75},
+    {id:'p4', mod:'prot',text:'Proteins L4',h:1.75},
+    {id:'p5', mod:'prot',text:'Proteins L5 — Enzyme mechanisms pt.1',h:1.75},
+  ]},
+]},
+{week:3,label:'Week 3 — 11 Apr',days:[
+  {date:'Sat 11 Apr',tasks:[
+    {id:'pqmm',mod:'prot',text:'Proteins Q&A — Michaelis–Menten',h:1.75},
+    {id:'p6',  mod:'prot',text:'Proteins L6 — Enzyme kinetics',h:1.75},
+    {id:'p7',  mod:'prot',text:'Proteins L7 — Enzyme mechanisms pt.2',h:1.75},
+  ]},
+  {date:'Sun 12 Apr',rest:true},
+  {date:'Mon 13 Apr',tasks:[
+    {id:'p8', mod:'prot',text:'Proteins L8 — Enzyme kinetics & inhibition',h:1.75},
+    {id:'p9', mod:'prot',text:'Proteins L9 — Circular dichroism',h:1.75},
+    {id:'p11',mod:'prot',text:'Proteins L11 — Ultracentrifugation',h:1.75},
+  ]},
+  {date:'Tue 14 Apr',tasks:[
+    {id:'p12',mod:'prot',text:'Proteins L12 — Diffraction pt.1',h:1.75},
+    {id:'p13',mod:'prot',text:'Proteins L13 — Diffraction pt.2',h:1.75},
+    {id:'p14',mod:'prot',text:'Proteins L14 — Diffraction pt.3',h:1.75},
+  ]},
+  {date:'Wed 15 Apr',complete:'Proteins',tasks:[
+    {id:'p15',mod:'prot',text:'Proteins L15 — Fluorescence spectroscopy',h:1.75},
+    {id:'p16',mod:'prot',text:'Proteins L16 — Diffraction pt.4',h:1.75},
+    {id:'p17',mod:'prot',text:'Proteins L17 — Diffraction pt.5',h:1.75},
+  ]},
+  {date:'Thu 16 Apr',tasks:[
+    {id:'cp4',mod:'chem',text:'Chemistry Prerecording 4',h:1.25},
+    {id:'ch4',mod:'chem',text:'Chemistry L4 — NMR',h:1.75},
+    {id:'ch5',mod:'chem',text:'Chemistry L5 — NMR',h:1.75},
+  ]},
+  {date:'Fri 17 Apr',tasks:[
+    {id:'ch6',mod:'chem',text:'Chemistry L6 — NMR  (2h lecture → ~3h notes)',h:3.0},
+    {id:'ch9',mod:'chem',text:'Chemistry L9 — Protein mass spec',h:1.75},
+  ]},
+]},
+{week:4,label:'Week 4 — 18 Apr  🎯 Revision',days:[
+  {date:'Sat 18 Apr',tasks:[
+    {id:'ch10',mod:'chem',text:'Chemistry L10 — Protein mass spec',h:1.75},
+    {id:'ch11',mod:'chem',text:'Chemistry L11 — Thermodynamics',h:1.75},
+    {id:'ch12',mod:'chem',text:'Chemistry L12 — CLICK chemistry',h:1.75},
+  ]},
+  {date:'Sun 19 Apr',rest:true},
+  {date:'Mon 20 Apr',complete:'Chemistry',tasks:[
+    {id:'ch13',mod:'chem',text:'Chemistry L13 — Thermodynamics',h:1.75},
+    {id:'ch14',mod:'chem',text:'Chemistry L14 — Thermodynamics',h:1.75},
+    {id:'cp56',mod:'chem',text:'Chemistry Prerecordings 5 & 6 — Inorganic chemistry',h:2.0},
+  ]},
+  {date:'Tue 21 Apr',tasks:[
+    {id:'rv1',mod:'rev',text:'Revision: Membranes — Techniques, transport, ox phos (L1–L11)',h:5.0},
+  ]},
+  {date:'Wed 22 Apr',tasks:[
+    {id:'rv2',mod:'rev',text:'Revision: Membranes — Photosynthesis & metabolism (L12–L20)',h:3.0},
+    {id:'rv3',mod:'rev',text:'Revision: Cell — all lectures',h:2.0},
+  ]},
+  {date:'Thu 23 Apr',tasks:[
+    {id:'rv4',mod:'rev',text:'Revision: Proteins — all lectures',h:5.0},
+  ]},
+  {date:'Fri 24 Apr',tasks:[
+    {id:'rv5',mod:'rev',text:'Revision: Chemistry — all lectures',h:3.0},
+    {id:'rv6',mod:'rev',text:'Revision: weak areas across all modules',h:2.0},
+  ]},
+]},
+];
+
+// collect all tasks and compute totals per module
+const allTasks={};
+S.forEach(w=>w.days.forEach(d=>{if(d.tasks)d.tasks.forEach(t=>{allTasks[t.id]=t})}));
+
+const modTotals={cell:0,mem:0,prot:0,chem:0};
+Object.values(allTasks).forEach(t=>{if(modTotals[t.mod]!==undefined)modTotals[t.mod]+=t.h});
+
+// state
+let done={};
+try{const raw=localStorage.getItem('study_done_v2');if(raw)done=JSON.parse(raw);}catch(e){}
+function save(){try{localStorage.setItem('study_done_v2',JSON.stringify(done));}catch(e){}}
+
+function getModDone(mod){
+  return Object.values(allTasks).filter(t=>t.mod===mod&&done[t.id]).reduce((a,t)=>a+t.h,0);
+}
+
+function fmt(h){return h%1===0?h+'h':h.toFixed(1)+'h';}
+
+function renderProgress(){
+  const row=document.getElementById('progress-row');
+  const mods=[['cell','Cell'],['mem','Membranes'],['prot','Proteins'],['chem','Chemistry']];
+  row.innerHTML=mods.map(([m,lbl])=>{
+    const tot=modTotals[m],doneH=getModDone(m),pct=tot>0?Math.round(doneH/tot*100):0;
+    return`<div class="prog-card">
+      <div class="prog-label"><span class="prog-name">${lbl}</span><span class="prog-pct">${pct}%</span></div>
+      <div class="prog-track"><div class="prog-fill" style="width:${pct}%;background:${MOD[m].color}"></div></div>
+      <div style="font-size:11px;color:#888780;margin-top:4px">${fmt(doneH)} / ${fmt(tot)}</div>
+    </div>`;
+  }).join('');
+}
+
+let activeWeek=0;
+
+function renderTabs(){
+  const tabs=document.getElementById('tabs');
+  tabs.innerHTML=S.map((w,i)=>`<button class="tab${i===activeWeek?' active':''}" onclick="setWeek(${i})">${w.label}</button>`).join('');
+}
+
+function setWeek(i){activeWeek=i;renderTabs();renderWeek();}
+
+function renderWeek(){
+  const wv=document.getElementById('week-view');
+  const week=S[activeWeek];
+  wv.innerHTML=week.days.map(day=>{
+    if(day.rest)return`<div class="rest-card">☀️ Rest day — ${day.date}</div>`;
+    const tasks=day.tasks||[];
+    const totalH=tasks.reduce((a,t)=>a+t.h,0);
+    const allDone=tasks.length>0&&tasks.every(t=>done[t.id]);
+    const headRight=`<div class="day-meta">
+      ${day.today?'<span class="badge-today">Today</span>':''}
+      ${allDone?'<span class="badge-done">Done ✓</span>':''}
+      <span class="day-hrs">~${fmt(totalH)}</span>
+    </div>`;
+    const rows=tasks.map(t=>{
+      const m=MOD[t.mod];
+      const isDone=!!done[t.id];
+      return`<div class="task-row">
+        <div class="mod-bar" style="background:${m.color}"></div>
+        <input type="checkbox" ${isDone?'checked':''} onchange="toggle('${t.id}',this.checked)">
+        <span class="task-text${isDone?' done':''}" id="tt-${t.id}">${t.text}</span>
+        <span class="mod-chip" style="background:${m.bg};color:${m.tc}">${m.label}</span>
+        <span class="task-hrs">~${fmt(t.h)}</span>
+      </div>`;
+    }).join('');
+    const note=day.complete?`<div class="section-note">🎉 ${day.complete} notes complete after today</div>`:'';
+    return`<div class="day-card">
+      <div class="day-head"><span class="day-name">${day.date}</span>${headRight}</div>
+      ${rows}${note}
+    </div>`;
+  }).join('');
+}
+
+function toggle(id,checked){
+  done[id]=checked;
+  save();
+  const el=document.getElementById('tt-'+id);
+  if(el)el.className='task-text'+(checked?' done':'');
+  // update day-head done badge without full re-render
+  renderWeek();
+  renderProgress();
+}
+
+renderProgress();
+renderTabs();
+renderWeek();
+</script>
+</body>
+</html>
